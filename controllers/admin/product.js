@@ -1,12 +1,13 @@
 const Product = require('../../models/product');
 class adminController  {
     async addProduct(req,res) {
-        console.log(req.description);
+        console.log(req.body);
         const product = await Product.create({
-            title: req.description.title,
-            price: req.description.price,
-            imageUrlUrl: req.description.imageUrlUrl,
-            description: req.description.description
+            title: req.body.title,
+            price: req.body.price,
+            imageUrl: req.body.imageUrl,
+            description: req.body.description,
+            userId: req.user.id
         })
         res.status(201).json({
             message: 'Product is added',
