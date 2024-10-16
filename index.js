@@ -23,8 +23,13 @@ app.use('/admin',productAdminRoutes);
 const productRoutes = require('./routes/products');
 app.use(productRoutes);
 
+const shopRoutes = require('./routes/shop');
+app.use(shopRoutes);
 
-sequelize.sync().then(()=>{
+const shopAdminRoutes = require('./routes/admin/shop');
+app.use(shopAdminRoutes);
+
+sequelize.sync({force:true}).then(()=>{
     
     console.log('Connection has been established successfully');
     return models.User.findByPk(1);
@@ -36,9 +41,11 @@ sequelize.sync().then(()=>{
         })
     }
     return user;
+}).then((user)=>{
+    return user.createCart();
 })
-.then((user)=>{
-    console.log(user);
+.then((cart)=>{
+    console.log(cart);
     app.listen(3026);
 })
 .catch((error)=>{
