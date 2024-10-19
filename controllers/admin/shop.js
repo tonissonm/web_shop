@@ -109,7 +109,7 @@ class adminShopController  {
         const UserId = req.user.id
         try{
             const orders = await Order.findAll({
-                where:{userId},
+                where:{UserId},
                 include:[
                     {
                         model:OrderItem,
