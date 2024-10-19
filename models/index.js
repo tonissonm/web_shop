@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const sequelize = require('../index');
+const orderItems = require('./order-items.js');
 const models = {};
 
 module.exports = (() => {
@@ -29,12 +30,18 @@ models.User = require('./user.js');
 models.Product = require('./product.js');
 models.Cart = require('./cart.js');
 models.CartItem = require('./cart-item.js');
-
+models.Order = require('./order.js')
+models.orderItems = require('./order-items.js')
 models.User.hasMany(models.Product);
 models.Product.belongsTo(models.User,{constraints:true,onDelete:'CASCADE'})
 models.User.hasOne(models.Cart);
 models.Cart.belongsTo(models.User);
 models.Cart.belongsToMany(models.Product, {through:models.CartItem})
 models.Product.belongsToMany(models.Cart,{through:models.CartItem})
+models.User.hasMany(models.Order)
+models.Order.belongsTo(User);
+models.Order.belongsToMany(Product,{through:models.orderItems})
+models.Product.belongsToMany(Order, {through:orderItems})
+
   return models;
 })();

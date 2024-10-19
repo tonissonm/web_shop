@@ -1,5 +1,9 @@
-const Product = require('../models/product')
-const Cart = require('../models/cart')
+const Product = require('../models/product.js')
+const Cart = require('../models/cart.js')
+const Order = require('../models/order.js');
+const OrderItem = require('../models/order-item.js');
+const CartItem = require('../models/cart-item.js'); 
+const User = require('../models/user.js');
 class adminShopController  {
     async getAllProducts(req,res){
         const products = await Product.findAll();
@@ -71,5 +75,60 @@ class adminShopController  {
             })
         }
     }
+    async addOrder(req,res){
+        const userId = req.user.id;
+        const userCart = await req.user.getCart();
+        const cartItems = await userCart.getProducts({
+            attributes:['id'],through:{
+                attributes:['quantity']
+            }
+        });
+        if(!cartItems.length >0){
+            return res.status(500).json({error:'Cart is empty.'})
+        }
+        try{
+            const orderItems = await cartItems.map(cartItem =>{
+                const quantity = cartItem.CartItem ? cartItem.CartItem.quantity:0;
+                return {productId:cartItem.id,quantity:quantity}
+            })
+            const order = await Order.create({userId})
+            for(const item of orderItems){
+                await OrderItem.create({orderId:order.id,...item})
+            }
+            return res.status(201).json({message: 'Order created successfully!!', order})
+        }
+        catch(error){
+            return res.status(500).json({
+                error: error
+            })
+        }
+        
+    
+    }
+    async getUserOrders(req,res){
+        const UserId = req.user.id
+        try{
+            const orders = await Order.findAll({
+                where:{userId},
+                include:[
+                    {
+                        model:OrderItem,
+                        include:[
+                            {
+                                model:Product,
+                                attributes:['id','title']
+                            }
+                        ]
+                    }
+                ],
+                order: [['createdAt','DESC']]
+            })
+            return res.status(200).json({orders})
+        }
+        catch(error){
+            res.status(500).json({error:error})
+
+        }
+    }
 }
-module.exports 
+module.exports = adminShopController();
